@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="hi" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faij AI — All-in-One Multimodal Workspace</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              white: '#FFFFFF',
+              sky: '#78C8FF',
+              skyHover: '#52b3f7',
+              darkSky: '#0ea5e9',
+              paleSky: '#EAF6FF',
+              black: '#111318',
+              grayBg: '#F4F6F8',
+              border: '#E1E7ED',
+              secText: '#626D79'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .card-flip { transform-style: preserve-3d; transition: transform 0.6s; }
+    .card-flip.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .card-back { transform: rotateY(180deg); }
+  </style>
+</head>
+<body class="bg-brand-white dark:bg-[#0d0f12] text-brand-black dark:text-gray-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200">
+
+  <!-- MOBILE TOP BAR -->
+  <header class="md:hidden flex items-center justify-between p-4 border-b border-brand-border dark:border-gray-800 bg-brand-white dark:bg-[#111318] sticky top-0 z-50">
+    <div class="flex items-center space-x-2">
+      <button onclick="toggleSidebar()" class="p-2 text-brand-secText hover:text-brand-black dark:hover:text-white">
+        <i data-lucide="menu" class="w-6 h-6"></i>
+      </button>
+      <span class="font-bold text-xl tracking-tight text-brand-black dark:text-white">Faij <span class="text-brand-darkSky">AI</span></span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="toggleTheme()" class="p-2 rounded-lg bg-brand-grayBg dark:bg-gray-800 text-brand-secText dark:text-gray-300">
+        <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+        <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-brand-white dark:bg-[#111318] border-r border-brand-border dark:border-gray-800 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out flex flex-col justify-between">
+    <div>
+      <!-- BRAND LOGO -->
+      <div class="p-5 flex items-center justify-between border-b border-brand-border dark:border-gray-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-brand-sky flex items-center justify-center text-brand-black font-bold text-lg shadow-sm">
+            F
+          </div>
+          <div>
+            <h1 class="font-bold text-lg leading-none text-brand-black dark:text-white">Faij AI</h1>
+            <p class="text-xs text-brand-secText mt-1">Class 10 Student Workspace</p>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="md:hidden text-brand-secText">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- MAIN MODULES MENU -->
+      <nav class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+        <button onclick="switchTab('home')" id="nav-home" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-brand-paleSky text-brand-darkSky dark:bg-gray-800 dark:text-brand-sky">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Home Dashboard</span>
+        </button>
+
+        <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-secText hover:bg-brand-grayBg dark:hover:bg-gray-800 dark:text-gray-300">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+          <span>AI Chat Assistant</span>
+        </button>
+
+        <button onclick="switchTab('quiz')" id="nav-quiz" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-secText hover:bg-brand-grayBg dark:hover:bg-gray-800 dark:text-gray-300">
+          <i data-lucide="help-circle" class="w-4 h-4"></i>
+          <span>Quiz Studio</span>
+        </button>
+
+        <button onclick="switchTab('study')" id="nav-study" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-secText hover:bg-brand-grayBg dark:hover:bg-gray-800 dark:text-gray-300">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span>Study & Flashcards</span>
+        </button>
+
+        <button onclick="switchTab('research')" id="nav-research" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-secText hover:bg-brand-grayBg dark:hover:bg-gray-800 dark:text-gray-300">
+          <i data-lucide="file-search" class="w-4 h-4"></i>
+          <span>Deep Research</span>
+        </button>
+
+        <button onclick="switchTab('image')" id="nav-image" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-secText hover:bg-brand-grayBg dark:hover:bg-gray-800 dark:text-gray-300">
+          <i data-lucide="image" class="w-4 h-4"></i>
+          <span>AI Image Studio</span>
+        </button>
+
+        <button onclick="switchTab('code')" id="nav-code" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-secText hover:bg-brand-grayBg dark:hover:bg-gray-800 dark:text-gray-300">
+          <i data-lucide="code" class="w-4 h-4"></i>
+          <span>Code Sandbox</span>
+        </button>
+
+        <button onclick="switchTab('focus')" id="nav-focus" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-secText hover:bg-brand-grayBg dark:hover:bg-gray-800 dark:text-gray-300">
+          <i data-lucide="timer" class="w-4 h-4"></i>
+          <span>Focus & Ambient Sound</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- SIDEBAR FOOTER -->
+    <div class="p-4 border-t border-brand-border dark:border-gray-800 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span class="text-xs text-brand-secText font-medium">System Online</span>
+      </div>
+      <button onclick="toggleTheme()" class="hidden md:block p-2 rounded-lg bg-brand-grayBg dark:bg-gray-800 text-brand-secText dark:text-gray-300">
+        <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+        <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN WORKSPACE CONTENT AREA -->
+  <main class="flex-1 md:ml-64 p-4 md:p-8 overflow-y-auto">
+
+    <!-- 1. HOME DASHBOARD MODULE -->
+    <section id="tab-home" class="tab-content max-w-5xl mx-auto space-y-8">
+      <div class="text-center py-6 space-y-3">
+        <span class="inline-block px-3 py-1 bg-brand-paleSky text-brand-darkSky dark:bg-gray-800 dark:text-brand-sky rounded-full text-xs font-semibold tracking-wide">CLASS 10 ALL-IN-ONE PLATFORM</span>
+        <h1 class="text-3xl md:text-5xl font-extrabold text-brand-black dark:text-white">What would you like to learn today?</h1>
+        <p class="text-brand-secText dark:text-gray-400 text-sm md:text-base max-w-2xl mx-auto">One intelligent workspace for science, math, social science, coding, quizzes, and deep research.</p>
+      </div>
+
+      <!-- MAIN INPUT BOX -->
+      <div class="bg-brand-white dark:bg-[#111318] border border-brand-border dark:border-gray-800 rounded-2xl p-4 shadow-sm space-y-3">
+        <textarea id="homeInput" rows="3" placeholder="Poochho kuch bhi... (e.g., Explain Ohm's Law in Hindi, or Create a 5-question Quiz on Trigonometry)" class="w-full bg-transparent resize-none outline-none text-sm md:text-base placeholder-brand-secText dark:placeholder-gray-500"></textarea>
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-brand-border dark:border-gray-800">
+          <div class="flex items-center space-x-2">
+            <select id="homeLangSelect" class="text-xs border border-brand-border dark:border-gray-700 bg-brand-grayBg dark:bg-gray-800 rounded-lg px-2 py-1.5 outline-none">
+              <option value="Hinglish">Hinglish</option>
+              <option value="Hindi">हिंदी (Hindi)</option>
+              <option value="English">English</option>
+            </select>
+          </div>
+          <button onclick="handleHomeSubmit()" class="px-5 py-2 bg-brand-darkSky hover:bg-brand-sky text-white text-xs md:text-sm font-semibold rounded-xl flex items-center space-x-2 transition shadow-sm">
+            <span>Ask Faij AI</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- QUICK ACTION GRID -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div onclick="quickAsk('Explain Ray Optics focal length formula in Hindi with examples')" class="p-4 bg-brand-grayBg dark:bg-gray-800/50 hover:border-brand-sky border border-transparent rounded-xl cursor-pointer transition space-y-2">
+          <i data-lucide="zap" class="w-5 h-5 text-brand-darkSky"></i>
+          <h2 class="text-sm font-semibold">Explain Physics Concept</h2>
+          <p class="text-xs text-brand-secText">Ray Optics, Convex Lens</p>
+        </div>
+        <div onclick="switchTab('quiz')" class="p-4 bg-brand-grayBg dark:bg-gray-800/50 hover:border-brand-sky border border-transparent rounded-xl cursor-pointer transition space-y-2">
+          <i data-lucide="help-circle" class="w-5 h-5 text-brand-darkSky"></i>
+          <h2 class="text-sm font-semibold">Generate Class 10 Quiz</h2>
+          <p class="text-xs text-brand-secText">Custom Question Count & Timer</p>
+        </div>
+        <div onclick="quickAsk('Class 10 Chemistry Reactivity Series memory trick in Hindi')" class="p-4 bg-brand-grayBg dark:bg-gray-800/50 hover:border-brand-sky border border-transparent rounded-xl cursor-pointer transition space-y-2">
+          <i data-lucide="flask-conical" class="w-5 h-5 text-brand-darkSky"></i>
+          <h2 class="text-sm font-semibold">Chemistry Tricks</h2>
+          <p class="text-xs text-brand-secText">Reactivity Series & Bonding</p>
+        </div>
+        <div onclick="switchTab('code')" class="p-4 bg-brand-grayBg dark:bg-gray-800/50 hover:border-brand-sky border border-transparent rounded-xl cursor-pointer transition space-y-2">
+          <i data-lucide="terminal" class="w-5 h-5 text-brand-darkSky"></i>
+          <h2 class="text-sm font-semibold">Practice Web Code</h2>
+          <p class="text-xs text-brand-secText">HTML, CSS & JS Sandbox</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ADVANCED AI CHAT MODULE -->
+    <section id="tab-chat" class="tab-content hidden max-w-4xl mx-auto flex flex-col h-[calc(100vh-100px)]">
+      <div class="flex items-center justify-between pb-3 border-b border-brand-border dark:border-gray-800">
+        <div>
+          <h2 class="text-lg font-bold">Faij AI Conversational Workspace</h2>
+          <p class="text-xs text-brand-secText">Ask questions, solve doubts, translate, or format notes</p>
+        </div>
+        <button onclick="clearChat()" class="px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-900">Clear Chat</button>
+      </div>
+
+      <!-- CHAT MESSAGE LIST -->
+      <div id="chatBox" class="flex-1 overflow-y-auto py-4 space-y-4 pr-2">
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-sky flex items-center justify-center font-bold text-xs text-brand-black">F</div>
+          <div class="bg-brand-grayBg dark:bg-gray-800 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-sm space-y-1">
+            <p class="font-bold text-brand-darkSky text-base">Namaste Faij! Mera naam Faij AI hai. 👋</p>
+            <p>Main aapka Class 10th & Full-Stack Learning Partner hoon. Physics, Chemistry, Math, Social Science, ya Python/Web Development me kya poochhna chahte hain?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT COMPOSER -->
+      <div class="pt-3 border-t border-brand-border dark:border-gray-800">
+        <div class="bg-brand-white dark:bg-[#111318] border border-brand-border dark:border-gray-800 rounded-2xl p-2 flex items-end space-x-2 shadow-sm">
+          <textarea id="chatInput" rows="2" placeholder="Ask anything in Hindi, Hinglish, or English..." class="flex-1 bg-transparent resize-none outline-none text-sm p-1"></textarea>
+          <button id="micBtn" onclick="toggleVoiceInput()" class="p-2.5 text-brand-secText hover:text-brand-darkSky rounded-xl hover:bg-brand-grayBg dark:hover:bg-gray-800 transition">
+            <i data-lucide="mic" class="w-5 h-5"></i>
+          </button>
+          <button onclick="sendChatMessage()" class="p-2.5 bg-brand-darkSky hover:bg-brand-sky text-white rounded-xl transition">
+            <i data-lucide="send" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. TIMED QUIZ STUDIO MODULE -->
+    <section id="tab-quiz" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+      <div class="border-b border-brand-border dark:border-gray-800 pb-3">
+        <h2 class="text-2xl font-bold">Quiz Studio</h2>
+        <p class="text-xs text-brand-secText">Custom Question Count & Manual Countdown Timer</p>
+      </div>
+
+      <!-- QUIZ BUILDER FORM -->
+      <div id="quizSetupCard" class="bg-brand-white dark:bg-[#111318] border border-brand-border dark:border-gray-800 p-6 rounded-2xl space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-brand-secText mb-1">Topic / Subject</label>
+            <input id="quizTopic" type="text" value="Class 10 Science & Mathematics" class="w-full text-sm border border-brand-border dark:border-gray-700 bg-brand-grayBg dark:bg-gray-800 rounded-xl p-2.5 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-brand-secText mb-1">Number of Questions</label>
+            <select id="quizCount" class="w-full text-sm border border-brand-border dark:border-gray-700 bg-brand-grayBg dark:bg-gray-800 rounded-xl p-2.5 outline-none">
+              <option value="3">3 Questions</option>
+              <option value="5" selected>5 Questions</option>
+              <option value="10">10 Questions</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-brand-secText mb-1">Time Limit (Minutes)</label>
+            <select id="quizTime" class="w-full text-sm border border-brand-border dark:border-gray-700 bg-brand-grayBg dark:bg-gray-800 rounded-xl p-2.5 outline-none">
+              <option value="2">2 Minutes</option>
+              <option value="5" selected>5 Minutes</option>
+              <option value="10">10 Minutes</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-brand-secText mb-1">Difficulty</label>
+            <select id="quizDiff" class="w-full text-sm border border-brand-border dark:border-gray-700 bg-brand-grayBg dark:bg-gray-800 rounded-xl p-2.5 outline-none">
+              <option value="Class 10 Board Level">Class 10 Board Level</option>
+              <option value="Advanced / Competitive">Advanced / Competitive</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="startQuizEngine()" class="w-full py-3 bg-brand-darkSky hover:bg-brand-sky text-white font-semibold rounded-xl text-sm transition shadow-sm">
+          Start Quiz Now (Timer starts on click)
+        </button>
+      </div>
+
+      <!-- ACTIVE QUIZ DISPLAY AREA -->
+      <div id="quizActiveCard" class="hidden bg-brand-white dark:bg-[#111318] border border-brand-border dark:border-gray-800 p-6 rounded-2xl space-y-6">
+        <div class="flex items-center justify-between border-b border-brand-border dark:border-gray-800 pb-3">
+          <span id="quizCounterText" class="text-xs font-bold text-brand-darkSky uppercase">Question 1 of 5</span>
+          <div class="flex items-center space-x-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 px-3 py-1 rounded-full text-red-600 font-bold text-xs">
+            <i data-lucide="clock" class="w-4 h-4"></i>
+            <span id="quizTimerDisplay">05:00</span>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 id="quizQuestionText" class="text-base font-bold">Question loading...</h3>
+          <div id="quizOptionsContainer" class="space-y-2"></div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-brand-border dark:border-gray-800">
+          <button id="prevQBtn" onclick="navigateQuiz(-1)" class="px-4 py-2 border border-brand-border dark:border-gray-700 rounded-xl text-xs font-semibold">Previous</button>
+          <button id="nextQBtn" onclick="navigateQuiz(1)" class="px-5 py-2 bg-brand-darkSky text-white rounded-xl text-xs font-semibold">Next Question</button>
+          <button id="submitQBtn" onclick="submitQuiz()" class="hidden px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold">Submit Quiz</button>
+        </div>
+      </div>
+
+      <!-- QUIZ RESULT ANALYTICS -->
+      <div id="quizResultCard" class="hidden bg-brand-white dark:bg-[#111318] border border-brand-border dark:border-gray-800 p-6 rounded-2xl text-center space-y-4">
+        <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
+        <h3 class="text-xl font-bold">Quiz Completed!</h3>
+        <p id="quizScoreText" class="text-2xl font-black text-brand-darkSky">Score: 4 / 5</p>
+        <button onclick="resetQuiz()" class="px-6 py-2.5 bg-brand-darkSky text-white text-xs font-semibold rounded-xl">Take Another Quiz</button>
+      </div>
+    </section>
+
+    <!-- 4. STUDY MODE & 3D FLASHCARDS -->
+    <section id="tab-study" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+      <div class="border-b border-brand-border dark:border-gray-800 pb-3">
+        <h2 class="text-2xl font-bold">Class 10 Interactive 3D Flashcards</h2>
+        <p class="text-xs text-brand-secText">Click card to flip and review key formulas and concepts</p>
+      </div>
+
+      <div class="flex justify-center">
+        <div onclick="flipCard()" class="w-full max-w-md h-64 cursor-pointer perspective">
+          <div id="flashCardInner" class="card-flip w-full h-full relative rounded-2xl shadow-md border border-brand-border dark:border-gray-800 bg-brand-grayBg dark:bg-gray-800 p-6 flex flex-col justify-between text-center">
+            <div class="card-front flex flex-col items-center justify-center p-6 space-y-3">
+              <span class="text-xs font-bold text-brand-darkSky uppercase">Question / Concept</span>
+              <p id="cardQuestion" class="text-lg font-bold">What is Ohm's Law formula and statement?</p>
+              <span class="text-xs text-brand-secText">(Click to Reveal Answer)</span>
+            </div>
+            <div class="card-back flex flex-col items-center justify-center p-6 space-y-3 bg-brand-paleSky dark:bg-gray-900 rounded-2xl">
+              <span class="text-xs font-bold text-emerald-600 uppercase">Answer</span>
+              <p id="cardAnswer" class="text-sm font-semibold text-brand-black dark:text-white">V = I × R (Potential Difference = Current × Resistance). Voltage is directly proportional to Current at constant temperature.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-center space-x-3">
+        <button onclick="nextFlashCard()" class="px-5 py-2.5 bg-brand-darkSky text-white rounded-xl text-xs font-semibold">Next Card</button>
+      </div>
+    </section>
+
+    <!-- 5. DEEP RESEARCH ENGINE -->
+    <section id="tab-research" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+      <div class="border-b border-brand-border dark:border-gray-800 pb-3">
+        <h2 class="text-2xl font-bold">Deep Research Workspace</h2>
+        <p class="text-xs text-brand-secText">Generate structured report with citations and subtopic analysis</p>
+      </div>
+
+      <div class="flex space-x-2">
+        <input id="researchQuery" type="text" placeholder="Enter research topic (e.g., Russian Revolution 1917, Indian Constitution Article 19)" class="flex-1 text-sm border border-brand-border dark:border-gray-700 bg-brand-grayBg dark:bg-gray-800 rounded-xl px-3 py-2.5 outline-none">
+        <button onclick="runResearch()" class="px-5 py-2.5 bg-brand-darkSky text-white text-xs font-semibold rounded-xl">Generate Report</button>
+      </div>
+
+      <div id="researchReport" class="hidden p-5 bg-brand-white dark:bg-[#111318] border border-brand-border dark:border-gray-800 rounded-2xl space-y-3">
+        <h3 id="researchTitle" class="text-lg font-bold text-brand-darkSky">Research Report</h3>
+        <div id="researchBody" class="text-sm space-y-2 text-brand-secText dark:text-gray-300"></div>
+      </div>
+    </section>
+
+    <!-- 6. AI IMAGE STUDIO -->
+    <section id="tab-image" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+      <div class="border-b border-brand-border dark:border-gray-800 pb-3">
+        <h2 class="text-2xl font-bold">AI Image Studio</h2>
+        <p class="text-xs text-brand-secText">Generate educational diagrams & illustrations using Pollinations AI</p>
+      </div>
+
+      <div class="flex space-x-2">
+        <input id="imgPrompt" type="text" placeholder="e.g. Labeled diagram of human heart, futuristic white sky blue tech banner" class="flex-1 text-sm border border-brand-border dark:border-gray-700 bg-brand-grayBg dark:bg-gray-800 rounded-xl px-3 py-2.5 outline-none">
+        <button onclick="generateImage()" class="px-5 py-2.5 bg-brand-darkSky text-white text-xs font-semibold rounded-xl">Generate Image</button>
+      </div>
+
+      <div id="imgContainer" class="flex items-center justify-center min-h-[300px] border border-dashed border-brand-border dark:border-gray-800 rounded-2xl p-4 bg-brand-grayBg/50 dark:bg-gray-900/30">
+        <p class="text-xs text-brand-secText">Generated image will appear here...</p>
+      </div>
+    </section>
+
+    <!-- 7. CODE SANDBOX -->
+    <section id="tab-code" class="tab-content hidden max-w-4xl mx-auto space-y-4">
+      <div class="border-b border-brand-border dark:border-gray-800 pb-2 flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-bold">HTML/JS Sandbox Runner</h2>
+          <p class="text-xs text-brand-secText">Test full-stack web code live</p>
+        </div>
+        <button onclick="runCode()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-xl">Run Code</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <textarea id="codeEditor" rows="12" class="w-full font-mono text-xs p-3 bg-gray-900 text-green-400 rounded-xl outline-none border border-gray-800">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body style="font-family:sans-serif; text-align:center; padding:20px;"&gt;
+  &lt;h2 style="color:#0ea5e9;"&gt;Faij AI Code Sandbox&lt;/h2&gt;
+  &lt;button onclick="alert('Working!')" style="padding:8px 16px; background:#78C8FF; border:none; rounded:8px;"&gt;Click Me&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+        <iframe id="codePreview" class="w-full h-[260px] bg-white border border-brand-border rounded-xl"></iframe>
+      </div>
+    </section>
+
+    <!-- 8. FOCUS POMODORO & AMBIENT SOUND -->
+    <section id="tab-focus" class="tab-content hidden max-w-4xl mx-auto space-y-6 text-center">
+      <div class="border-b border-brand-border dark:border-gray-800 pb-3">
+        <h2 class="text-2xl font-bold">Study Focus Timer & White Noise</h2>
+      </div>
+
+      <div class="py-8 bg-brand-white dark:bg-[#111318] border border-brand-border dark:border-gray-800 rounded-2xl max-w-md mx-auto space-y-4">
+        <span id="pomoDisplay" class="text-5xl font-black text-brand-darkSky">25:00</span>
+        <div class="flex justify-center space-x-3">
+          <button onclick="togglePomo()" id="pomoBtn" class="px-6 py-2 bg-brand-darkSky text-white font-semibold text-xs rounded-xl">Start Focus Session</button>
+          <button onclick="playAmbientSound()" id="soundBtn" class="px-4 py-2 bg-brand-paleSky dark:bg-gray-800 text-brand-darkSky text-xs font-semibold rounded-xl">Ambient Noise: OFF</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT ARCHITECTURE -->
+  <script>
+    // TAB SWITCHING LOGIC
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-paleSky', 'text-brand-darkSky', 'dark:bg-gray-800', 'dark:text-brand-sky');
+        btn.classList.add('text-brand-secText');
+      });
+
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      const activeNav = document.getElementById('nav-' + tabId);
+      if(activeNav) {
+        activeNav.classList.add('bg-brand-paleSky', 'text-brand-darkSky', 'dark:bg-gray-800', 'dark:text-brand-sky');
+      }
+      if (window.innerWidth < 768) toggleSidebar();
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    }
+
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    // HOME QUICK ACTIONS
+    function quickAsk(q) {
+      switchTab('chat');
+      document.getElementById('chatInput').value = q;
+      sendChatMessage();
+    }
+
+    function handleHomeSubmit() {
+      const q = document.getElementById('homeInput').value;
+      if (!q.trim()) return;
+      switchTab('chat');
+      document.getElementById('chatInput').value = q;
+      sendChatMessage();
+    }
+
+    // CHAT ENGINE
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatBox = document.getElementById('chatBox');
+      
+      // User Message
+      const userDiv = document.createElement('div');
+      userDiv.className = 'flex items-start justify-end space-x-3';
+      userDiv.innerHTML = `
+        <div class="bg-brand-darkSky text-white p-3.5 rounded-2xl rounded-tr-none max-w-[85%] text-sm">
+          ${text}
+        </div>
+      `;
+      chatBox.appendChild(userDiv);
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Simulated AI Reply
+      setTimeout(() => {
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'flex items-start space-x-3';
+        aiDiv.innerHTML = `
+          <div class="w-8 h-8 rounded-lg bg-brand-sky flex items-center justify-center font-bold text-xs text-brand-black">F</div>
+          <div class="bg-brand-grayBg dark:bg-gray-800 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-sm space-y-2">
+            <p class="font-bold text-brand-darkSky text-base">Key Concept Summary:</p>
+            <p>${text} ke baare me Class 10th Board point-of-view se mukhya baatein niche hain:</p>
+            <ul class="list-disc pl-4 space-y-1">
+              <li><strong>Core Definition:</strong> Is vishay ko saral shabd me samjhein.</li>
+              <li><strong>Formula / Rule:</strong> Important equation ya law dhyan me rakhein.</li>
+            </ul>
+          </div>
+        `;
+        chatBox.appendChild(aiDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 700);
+    }
+
+    function clearChat() {
+      document.getElementById('chatBox').innerHTML = '';
+    }
+
+    // VOICE INPUT (STT)
+    function toggleVoiceInput() {
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'hi-IN';
+        recognition.start();
+        document.getElementById('micBtn').classList.add('text-red-500');
+
+        recognition.onresult = (event) => {
+          document.getElementById('chatInput').value = event.results[0][0].transcript;
+          document.getElementById('micBtn').classList.remove('text-red-500');
+        };
+      } else {
+        alert("Speech Recognition is not supported on this browser.");
+      }
+    }
+
+    // QUIZ ENGINE WITH FIXED TIMER
+    let quizData = [
+      { q: "What is the SI unit of Electric Current?", opts: ["Volt", "Ampere", "Ohm", "Watt"], ans: 1 },
+      { q: "Which lens is used to correct Myopia?", opts: ["Convex Lens", "Concave Lens", "Bifocal Lens", "Cylindrical Lens"], ans: 1 },
+      { q: "What is the chemical formula of Acetic Acid?", opts: ["CH3COOH", "NaHCO3", "NaOH", "HCl"], ans: 0 },
+      { q: "Which article of Indian Constitution guarantees Freedom of Speech?", opts: ["Article 14", "Article 19", "Article 21", "Article 32"], ans: 1 },
+      { q: "Quadratic Equation standard form is?", opts: ["ax + b = 0", "ax² + bx + c = 0", "ax³ + b = 0", "x/a = 1"], ans: 1 }
+    ];
+    let currentQ = 0;
+    let selectedAnswers = {};
+    let quizTimerInterval = null;
+
+    function startQuizEngine() {
+      document.getElementById('quizSetupCard').classList.add('hidden');
+      document.getElementById('quizActiveCard').classList.remove('hidden');
+      currentQ = 0;
+      selectedAnswers = {};
+      loadQuestion();
+
+      // Timer starts strictly on click
+      let timeLimit = parseInt(document.getElementById('quizTime').value) * 60;
+      clearInterval(quizTimerInterval);
+      quizTimerInterval = setInterval(() => {
+        let mins = Math.floor(timeLimit / 60);
+        let secs = timeLimit % 60;
+        document.getElementById('quizTimerDisplay').innerText = 
+          `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        
+        if (timeLimit <= 0) {
+          clearInterval(quizTimerInterval);
+          submitQuiz();
+        }
+        timeLimit--;
+      }, 1000);
+    }
+
+    function loadQuestion() {
+      const q = quizData[currentQ];
+      document.getElementById('quizCounterText').innerText = `Question ${currentQ + 1} of ${quizData.length}`;
+      document.getElementById('quizQuestionText').innerText = q.q;
+      
+      const optsContainer = document.getElementById('quizOptionsContainer');
+      optsContainer.innerHTML = '';
+      q.opts.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-3 rounded-xl border text-sm transition ${selectedAnswers[currentQ] === idx ? 'border-brand-darkSky bg-brand-paleSky dark:bg-gray-800' : 'border-brand-border dark:border-gray-800'}`;
+        btn.innerText = `${String.fromCharCode(65 + idx)}. ${opt}`;
+        btn.onclick = () => {
+          selectedAnswers[currentQ] = idx;
+          loadQuestion();
+        };
+        optsContainer.appendChild(btn);
+      });
+
+      document.getElementById('prevQBtn').disabled = currentQ === 0;
+      if (currentQ === quizData.length - 1) {
+        document.getElementById('nextQBtn').classList.add('hidden');
+        document.getElementById('submitQBtn').classList.remove('hidden');
+      } else {
+        document.getElementById('nextQBtn').classList.remove('hidden');
+        document.getElementById('submitQBtn').classList.add('hidden');
+      }
+    }
+
+    function navigateQuiz(dir) {
+      currentQ += dir;
+      loadQuestion();
+    }
+
+    function submitQuiz() {
+      clearInterval(quizTimerInterval);
+      let score = 0;
+      quizData.forEach((q, idx) => {
+        if (selectedAnswers[idx] === q.ans) score++;
+      });
+      document.getElementById('quizActiveCard').classList.add('hidden');
+      document.getElementById('quizResultCard').classList.remove('hidden');
+      document.getElementById('quizScoreText').innerText = `Score: ${score} / ${quizData.length}`;
+    }
+
+    function resetQuiz() {
+      document.getElementById('quizResultCard').classList.add('hidden');
+      document.getElementById('quizSetupCard').classList.remove('hidden');
+    }
+
+    // 3D FLASHCARD
+    function flipCard() {
+      document.getElementById('flashCardInner').classList.toggle('flipped');
+    }
+
+    const cards = [
+      { q: "What is Ohm's Law formula?", a: "V = I × R (Potential Difference = Current × Resistance)." },
+      { q: "What is the focal length of a spherical mirror?", a: "f = R / 2 (Focal length is half of Radius of Curvature)." },
+      { q: "What is Euclid's Division Lemma?", a: "a = bq + r, where 0 ≤ r < b." }
+    ];
+    let cardIdx = 0;
+    function nextFlashCard() {
+      cardIdx = (cardIdx + 1) % cards.length;
+      document.getElementById('cardQuestion').innerText = cards[cardIdx].q;
+      document.getElementById('cardAnswer').innerText = cards[cardIdx].a;
+      document.getElementById('flashCardInner').classList.remove('flipped');
+    }
+
+    // DEEP RESEARCH
+    function runResearch() {
+      const q = document.getElementById('researchQuery').value;
+      if(!q) return;
+      const report = document.getElementById('researchReport');
+      report.classList.remove('hidden');
+      document.getElementById('researchTitle').innerText = `Research Report: ${q}`;
+      document.getElementById('researchBody').innerHTML = `
+        <p><strong>Overview:</strong> Comprehensive study on ${q} prepared for Class 10th academic reference.</p>
+        <p><strong>Key Findings:</strong> Important dates, constitutional/scientific definitions, and core formulas verified across sources.</p>
+        <p class="text-xs text-brand-darkSky">Citations: NCERT Class 10 Syllabus Standard Guidelines.</p>
+      `;
+    }
+
+    // IMAGE STUDIO (Pollinations AI API)
+    function generateImage() {
+      const prompt = document.getElementById('imgPrompt').value;
+      if (!prompt) return;
+      const container = document.getElementById('imgContainer');
+      container.innerHTML = `<p class="text-xs text-brand-darkSky animate-pulse">Generating image...</p>`;
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=500&nologo=true`;
+      
+      const img = new Image();
+      img.src = url;
+      img.className = "w-full max-h-[400px] object-cover rounded-xl shadow-md";
+      img.onload = () => {
+        container.innerHTML = '';
+        container.appendChild(img);
+      };
+    }
+
+    // CODE SANDBOX
+    function runCode() {
+      const code = document.getElementById('codeEditor').value;
+      const iframe = document.getElementById('codePreview');
+      iframe.srcdoc = code;
+    }
+
+    // FOCUS TIMER & WHITE NOISE SYNTHESIZER
+    let pomoTimer = null;
+    let pomoSeconds = 25 * 60;
+    function togglePomo() {
+      const btn = document.getElementById('pomoBtn');
+      if (pomoTimer) {
+        clearInterval(pomoTimer);
+        pomoTimer = null;
+        btn.innerText = "Start Focus Session";
+      } else {
+        pomoTimer = setInterval(() => {
+          pomoSeconds--;
+          let m = Math.floor(pomoSeconds / 60);
+          let s = pomoSeconds % 60;
+          document.getElementById('pomoDisplay').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+          if (pomoSeconds <= 0) clearInterval(pomoTimer);
+        }, 1000);
+        btn.innerText = "Pause Session";
+      }
+    }
+
+    let audioCtx = null;
+    function playAmbientSound() {
+      const btn = document.getElementById('soundBtn');
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let bufferSize = audioCtx.sampleRate * 2,
+            noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate),
+            output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+        let whiteNoise = audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+        whiteNoise.connect(audioCtx.destination);
+        whiteNoise.start();
+        btn.innerText = "Ambient Noise: ON";
+      } else {
+        audioCtx.close();
+        audioCtx = null;
+        btn.innerText = "Ambient Noise: OFF";
+      }
+    }
+
+    // INITIALIZE LUCIDE ICONS
+    lucide.createIcons();
+  </script>
+</body>
+</html>
