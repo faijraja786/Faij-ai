@@ -7,7 +7,9 @@ const rateLimit = require("express-rate-limit");
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const API_KEY = process.env.AI_API_KEY;
-const AI_BASE_URL = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\\/+$/, "");
+
+const AI_BASE_URL = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
+
 const AI_MODEL = process.env.AI_MODEL || "gpt-4o-mini";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://faijraja786.github.io")
   .split(",").map(s => s.trim()).filter(Boolean);
