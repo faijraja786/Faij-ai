@@ -6,7 +6,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
-const app = express();
+app.set("trust proxy", 1);
 
 const PORT = Number(process.env.PORT || 3000);
 const API_KEY = process.env.AI_API_KEY;
