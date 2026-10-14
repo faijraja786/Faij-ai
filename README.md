@@ -1,26 +1,71 @@
-# Faij AI Backend
+# Faij AI 🤖
 
-## Render settings
-- Runtime: Node
-- Build command: `npm install`
-- Start command: `npm start`
-- Root directory: blank if files are in repository root; otherwise set the backend folder.
+**Faij AI** is an AI-powered chat website designed to help with learning, coding, creativity, and everyday questions.
 
-## Render Environment variables
-- `AI_API_KEY`: secret key from your provider
-- `AI_BASE_URL`: OpenAI-compatible API base URL (default `https://api.openai.com/v1`)
-- `AI_MODEL`: a model available to your provider account
-- `ALLOWED_ORIGINS`: `https://faijraja786.github.io` (adjust if your Pages origin differs)
-- `RATE_LIMIT_PER_MINUTE`: optional, default `15`
+## ✨ Features
 
-Never put a real API key in frontend code, GitHub commits, screenshots, or chat messages.
+- AI-powered chat using Google Gemini
+- Educational explanations in Hindi and English
+- Coding assistance
+- Simple web interface
+- Secure backend API integration
+- Request rate limiting
+- Basic security headers
+- Cross-origin request protection
 
-## Endpoints
-- `GET /` status
-- `GET /health` health and key configured status (does not reveal the key)
-- `POST /api/chat` JSON body example:
-`{"messages":[{"role":"user","content":"Explain photosynthesis in Hindi"}]}`
+## 🛠️ Technology Stack
 
-Response: `{"reply":"...","model":"..."}`
+### Frontend
+- HTML
+- CSS
+- JavaScript
+- GitHub Pages
 
-This provides model chat after a valid provider key, base URL, and model are configured. API usage may cost money. It does not yet implement accounts, persistent history, document parsing, web search, image generation, or file uploads.
+### Backend
+- Node.js
+- Express.js
+- Google Gemini API
+- Render
+
+## 🚀 Backend Deployment on Render
+
+### 1. Service Configuration
+
+Configure your Render Web Service with these settings:
+
+- **Runtime:** Node
+- **Build Command:** `npm install`
+- **Start Command:** `npm start`
+- **Root Directory:** Leave blank if the backend files are in the repository root. Otherwise, specify the backend folder.
+
+### 2. Environment Variables
+
+Add the following environment variables in your Render dashboard:
+
+| Variable | Value |
+|---|---|
+| `AI_API_KEY` | Your valid Google Gemini API key |
+| `AI_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta/openai/` |
+| `AI_MODEL` | `gemini-2.5-flash` |
+| `ALLOWED_ORIGINS` | `https://faijraja786.github.io` |
+| `RATE_LIMIT_PER_MINUTE` | `15` |
+
+**Security:** Never publish your API key in GitHub files, frontend JavaScript, screenshots, or chat messages. Store it only in the backend environment variables.
+
+## 🔗 API Endpoints
+
+### Health Check
+
+`GET /health`
+
+Checks whether the backend is running and whether an API key is configured.
+
+Example response:
+
+```json
+{
+  "ok": true,
+  "configured": true,
+  "provider": "Gemini",
+  "model": "gemini-2.5-flash"
+}
