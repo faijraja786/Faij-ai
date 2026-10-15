@@ -152,8 +152,15 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
     }
 
     if (!apiResponse.ok) {
-      // Do not log API keys or expose secrets.
-      console.error("Gemini API returned status:", apiResponse.status);
+  // Log provider error safely, without exposing the API key.
+  const providerError = result?.error?.message || "No error message returned";
+
+  console.error("Gemini API error:", {
+    status: apiResponse.status,
+    message: providerError,
+    model: AI_MODEL,
+    baseUrl: AI_BASE_URL,
+  });
 
       if (apiResponse.status === 401 || apiResponse.status === 403) {
         return res.status(apiResponse.status).json({
@@ -177,7 +184,7 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
       return res.status(502).json({
         error: "Gemini provider request failed.",
         providerStatus: apiResponse.status,
-      });
+      });unique
     }
 
     const reply = result?.choices?.[0]?.message?.content;
