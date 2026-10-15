@@ -6,16 +6,11 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
+
 app.set("trust proxy", 1);
 
 const PORT = Number(process.env.PORT || 3000);
 const API_KEY = process.env.AI_API_KEY;
-
-const AI_BASE_URL = (
-  process.env.AI_BASE_URL ||
-  "https://generativelanguage.googleapis.com/v1beta/openai"
-).replace(/\/+$/, "");
-
 const AI_MODEL = process.env.AI_MODEL || "gemini-2.5-flash";
 
 const ALLOWED_ORIGINS = (
@@ -25,6 +20,9 @@ const ALLOWED_ORIGINS = (
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+const GEMINI_URL =
+  `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI_MODEL)}:generateContent`;
 
 app.disable("x-powered-by");
 app.use(helmet());
@@ -36,7 +34,7 @@ app.use(
         return callback(null, true);
       }
 
-      return callback(new Error("Origin is not allowed by Faij AI backend."));
+      return callback(new Error("Origin is not allowed."));
     },
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -60,6 +58,7 @@ app.get("/", (_req, res) => {
     app: "Faij AI Backend",
     status: "running",
     provider: "Gemini",
+    model: AI_MODEL,
     endpoints: ["/health", "/api/chat"],
   });
 });
@@ -81,8 +80,7 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
       });
     }
 
-    const body = req.body || {};
-    const inputMessages = body.messages;
+    const inputMessages = req.body?.messages;
 
     if (
       !Array.isArray(inputMessages) ||
@@ -94,7 +92,7 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
       });
     }
 
-    const messages = [];
+    const contents = [];
 
     for (const message of inputMessages) {
       if (
@@ -108,38 +106,56 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
         });
       }
 
-      messages.push({
-        role: message.role === "assistant" ? "assistant" : "user",
-        content: message.content.trim().slice(0, 12000),
+      const text = message.content.trim().slice(0, 12000);
+
+      // Gemini uses "model" instead of "assistant".
+      const role = message.role === "assistant" ? "model" : "user";
+
+      // Merge consecutive messages with the same role.
+      const last = contents[contents.length - 1];
+
+      if (last && last.role === role) {
+        last.parts[0].text += "\n" + text;
+      } else {
+        contents.push({
+          role,
+          parts: [{ text }],
+        });
+      }
+    }
+
+    if (!contents.length || contents[contents.length - 1].role !== "user") {
+      return res.status(400).json({
+        error: "The last message must be from the user.",
       });
     }
 
-    const apiResponse = await fetch(
-      `${AI_BASE_URL}/chat/completions`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: AI_MODEL,
-          messages: [
+    const apiResponse = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": API_KEY,
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [
             {
-              role: "system",
-              content:
+              text:
                 "You are Faij AI, a helpful educational AI assistant. " +
                 "Reply in Hindi when the user prefers Hindi. " +
                 "Explain clearly, accurately, and step by step. " +
                 "For coding questions, provide practical and correct code.",
             },
-            ...messages,
           ],
+        },
+        contents,
+        generationConfig: {
           temperature: 0.7,
-        }),
-        signal: AbortSignal.timeout(45000),
-      }
-    );
+          maxOutputTokens: 2048,
+        },
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
 
     const responseText = await apiResponse.text();
 
@@ -152,54 +168,54 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
     }
 
     if (!apiResponse.ok) {
-  // Log provider error safely, without exposing the API key.
-  const providerError = result?.error?.message || "No error message returned";
+      const providerMessage =
+        result?.error?.message || "No error message returned";
 
-  console.error("Gemini API error:", {
-    status: apiResponse.status,
-    message: providerError,
-    model: AI_MODEL,
-    baseUrl: AI_BASE_URL,
-  });
+      // Never log the API key.
+      console.error("Gemini API error:", {
+        status: apiResponse.status,
+        message: providerMessage,
+        model: AI_MODEL,
+      });
 
       if (apiResponse.status === 401 || apiResponse.status === 403) {
         return res.status(apiResponse.status).json({
-          error:
-            "Gemini authentication failed. Check that AI_API_KEY is a valid Gemini API key.",
+          error: "Gemini authentication failed. Check your API key and access.",
         });
       }
 
       if (apiResponse.status === 429) {
         return res.status(429).json({
-          error: "Gemini rate limit or quota reached. Try again later.",
-        });
-      }
-
-      if (apiResponse.status === 404) {
-        return res.status(502).json({
-          error: "Gemini endpoint or model not found. Check AI_MODEL.",
+          error: "Gemini quota or rate limit reached. Try again later.",
         });
       }
 
       return res.status(502).json({
         error: "Gemini provider request failed.",
         providerStatus: apiResponse.status,
-      });unique
+      });
     }
 
-    const reply = result?.choices?.[0]?.message?.content;
+    const reply = result?.candidates
+      ?.flatMap((candidate) => candidate.content?.parts || [])
+      .map((part) => part.text || "")
+      .join("")
+      .trim();
 
-    if (typeof reply !== "string" || !reply.trim()) {
-      console.error("Gemini response did not contain a text reply.");
+    if (!reply) {
+      console.error("Gemini returned no text. Check candidate finish reason.");
 
       return res.status(502).json({
         error: "Gemini returned an empty or unexpected response.",
       });
     }
 
-    return res.json({ reply: reply.trim() });
+    return res.json({ reply });
   } catch (error) {
-    if (error.name === "TimeoutError" || error.name === "AbortError") {
+    if (
+      error.name === "TimeoutError" ||
+      error.name === "AbortError"
+    ) {
       return res.status(504).json({
         error: "AI response timed out. Please try again.",
       });
@@ -208,7 +224,7 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
     console.error("Chat backend error:", error.message);
 
     return res.status(500).json({
-      error: "Internal backend error. Check the server logs.",
+      error: "Internal backend error. Check server logs.",
     });
   }
 });
@@ -229,6 +245,6 @@ app.use((err, _req, res, _next) => {
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Faij AI backend is running on port", PORT);
-  console.log("AI provider: Gemini");
+  console.log("AI provider: Gemini Native API");
   console.log("AI model:", AI_MODEL);
 });
